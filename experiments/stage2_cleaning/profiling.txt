@@ -1,0 +1,103 @@
+Profiling c:\Users\PURUSOUTHANAN\OneDrive\Desktop\jarvis_checker\dataset\train\train_ground_truth.tsv...
+{
+  "filename": "train_ground_truth.tsv",
+  "format": "tsv",
+  "rows": 2206821,
+  "columns": 2,
+  "column_names": [
+    "source1_entity_id",
+    "matched_entity_ids"
+  ],
+  "missing_pct": {
+    "source1_entity_id": 0.0,
+    "matched_entity_ids": 0.05584820880352326
+  },
+  "unique_values": {
+Traceback (most recent call last):
+    "source1_entity_id": 2206821,
+    "matched_entity_ids": 2083574
+  },
+  "duplicates": 0,
+  "file_size_mb": 121.13149929046631
+}
+Sample data for train_ground_truth.tsv:
+  source1_entity_id                                                             matched_entity_ids
+0         S1-965667                S2-681193310,S2-743505751,S3-775321672,S3-11291185,S3-860443364
+1       S1-55344266                            S2-249013014,S2-197070651,S3-478195123,S3-384364074
+2      S1-343815751                                         S2-790675320,S2-479876582,S3-878454467
+  File "C:\Users\PURUSOUTHANAN\OneDrive\Desktop\jarvis_checker\profile_data.py", line 47, in <module>
+3      S1-656753428                                          S2-153058913,S2-24659151,S3-679606215
+4      S1-102811957  S2-478959098,S2-553508714,S2-625774905,S3-728090388,S3-928796641,S3-449308785
+--------------------------------------------------
+Profiling c:\Users\PURUSOUTHANAN\OneDrive\Desktop\jarvis_checker\dataset\train\train_source1.tsv...
+{
+  "filename": "train_source1.tsv",
+  "format": "tsv",
+  "rows": 2206821,
+  "columns": 4,
+  "column_names": [
+    "entity_id",
+    "business_name",
+    "business_address",
+    "country"
+  ],
+  "missing_pct": {
+    "entity_id": 0.0,
+    "business_name": 0.0,
+    "business_address": 0.0,
+    "country": 0.0
+  },
+  "unique_values": {
+    "entity_id": 2206821,
+    "business_name": 1539229,
+    "business_address": 2130606,
+    "country": 2
+  },
+  "duplicates": 0,
+  "file_size_mb": 200.33808994293213
+}
+Sample data for train_source1.tsv:
+      entity_id            business_name                                      business_address country
+    main()
+0  S1-925783039      Orelee's Barbershop                1795 Westchester Drive, High Point, NC      US
+1  S1-773889195              Prime Money                       17560 Ellis Road, Tahlequah, OK      US
+2  S1-377745466            B+ Retail Inc                   1712 Montebello Avenue, Phoenix, AZ      US
+3  S1-133037285            Christ Chapel     2100 Cameron Drive, Unit APARTMENT G, Dundalk, MD      US
+4  S1-755362802  Prabhav Business Center  797, Lake Town Block A, Kolkata, Howrah, West Bengal   India
+--------------------------------------------------
+Profiling c:\Users\PURUSOUTHANAN\OneDrive\Desktop\jarvis_checker\dataset\train\train_source2.tsv...
+{
+  "filename": "train_source2.tsv",
+  "format": "tsv",
+  "rows": 5034616,
+  "columns": 4,
+  "column_names": [
+    "entity_id",
+    "business_name",
+    "business_address",
+    "country"
+  ],
+  "missing_pct": {
+    "entity_id": 0.0,
+    "business_name": 3.9724976045839445e-07,
+    "business_address": 0.03356105013768677,
+    "country": 0.0
+  },
+  "unique_values": {
+    "entity_id": 5034616,
+    "business_name": 4402008,
+    "business_address": 4337261,
+    "country": 2
+  },
+  "duplicates": 0,
+  "file_size_mb": 466.63426208496094
+}
+Sample data for train_source2.tsv:
+  File "C:\Users\PURUSOUTHANAN\OneDrive\Desktop\jarvis_checker\profile_data.py", line 44, in main
+    profile_tsv(f)
+  File "C:\Users\PURUSOUTHANAN\OneDrive\Desktop\jarvis_checker\profile_data.py", line 32, in profile_tsv
+    print(df.head(5).to_string())
+  File "C:\Users\PURUSOUTHANAN\AppData\Local\Programs\Python\Python312\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode characters in position 125-127: character maps to <undefined>

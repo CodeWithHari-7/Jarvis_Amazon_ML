@@ -1,0 +1,13 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.7, pytest-9.1.1, pluggy-1.6.0 -- C:\Users\PURUSOUTHANAN\AppData\Local\Programs\Python\Python312\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\PURUSOUTHANAN\OneDrive\Desktop\jarvis_checker
+plugins: anyio-4.12.1, asyncio-1.4.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 3 items
+
+tests/test_preprocessing.py::test_cleaning PASSED                        [ 33%]
+tests/test_preprocessing.py::test_normalization PASSED                   [ 66%]
+tests/test_preprocessing.py::test_features PASSED                        [100%]
+
+============================== 3 passed in 0.11s ==============================

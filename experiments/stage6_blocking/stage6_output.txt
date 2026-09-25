@@ -1,0 +1,23 @@
+--- 1. LOADING DATA SAMPLE & GROUND TRUTH ---
+Loaded 5000 S1 entities and 118331 S2/S3 candidates in 55.59s.
+Total True Pairs in sample universe: 18331
+
+--- 2. RUNNING BLOCKING EXPERIMENTS ---
+Finished A. Exact Name: Recall=13.32% | Cands=2792 | Time=0.18s
+Finished B. Country + Name: Recall=13.32% | Cands=2787 | Time=0.21s
+Finished C. Country + Name Prefix (4): Recall=76.22% | Cands=422215 | Time=0.15s
+Finished D. Country + Name Tokens: Recall=83.43% | Cands=24315179 | Time=8.87s
+Finished F. Country + Addr Num: Recall=79.19% | Cands=6192471 | Time=2.18s
+Finished Multi-Pass (Prefix UNION Addr Num): Recall=96.01% | Cands=6595628 | Time=2.65s
+Running Strategy E: TF-IDF Char 3-gram (Cosine > 0.6)...
+Finished E. TF-IDF: Recall=81.70% | Cands=72388 | Time=27.79s
+
+=== FINAL BLOCKING BENCHMARK ===
+                               Method  Recall     Cands  Avg Cands  P95 Cands Reduction Time (s)
+0                       A. Exact Name  13.32%      2792     0.5584       2.00  99.9995%     0.18
+1                   B. Country + Name  13.32%      2787     0.5574       2.00  99.9995%     0.21
+2        C. Country + Name Prefix (4)  76.22%    422215    84.4430     256.00  99.9286%     0.15
+3            D. Country + Name Tokens  83.43%  24315179  4863.0358   19161.25  95.8903%     8.87
+4               F. Country + Addr Num  79.19%   6192471  1238.4942    6989.35  98.9534%     2.18
+5  Multi-Pass (Prefix UNION Addr Num)  96.01%   6595628  1319.1256    7072.35  98.8852%     2.65
+6        E. TF-IDF Char 3-gram (>0.6)  81.70%     72388    14.4776      58.05  99.9878%    27.79

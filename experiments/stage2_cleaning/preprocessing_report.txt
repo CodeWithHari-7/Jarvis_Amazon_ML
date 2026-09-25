@@ -1,0 +1,87 @@
+=== PREPROCESSING BENCHMARK & QUALITY REPORT ===
+
+Data Load (100k rows each): 0.118 seconds
+
+Data Cleaning (200k rows total): 0.013 seconds
+S2 Null Addresses before cleaning: 3330
+S2 Null Addresses after cleaning (filled empty string): 0
+
+Data Normalization & Regex Extraction (200k rows total): 0.099 seconds
+
+=== NORMALIZATION EXAMPLES (REAL DATA) ===
+Raw Name   : राम मार्केटिंग प्राइवेट लिमिटेड
+Norm Name  : राम मार्केटिंग प्राइवेट लिमिटेड
+Raw Addr   : KH NO. -570/13, NEW DELHI, WEST DELHI, Delhi
+Norm Addr  : kh no 570 13 new delhi west delhi delhi
+Extracted #: ['570', '13']
+Is Indic   : True
+----------------------------------------
+Raw Name   : -- Holloway Peak Inc Seafood
+Norm Name  : holloway peak inc seafood
+Raw Addr   : 105 ELM ST, MORGANTON, NC
+Norm Addr  : 105 elm st morganton nc
+Extracted #: ['105']
+Is Indic   : False
+----------------------------------------
+Raw Name   : आदित्य प्रॉपर्टीज एलएलपी
+Norm Name  : आदित्य प्रॉपर्टीज एलएलपी
+Raw Addr   : G-3/571, GULMOHAR COLONY, BHOPAL, Madhya Pradesh
+Norm Addr  : g 3 571 gulmohar colony bhopal madhya pradesh
+Extracted #: ['3', '571']
+Is Indic   : True
+----------------------------------------
+Raw Name   : Summit Inc
+Norm Name  : summit inc
+Raw Addr   : GREENSBORO, NC, 19 1/2 STARDUST TRAIL
+Norm Addr  : greensboro nc 19 1 2 stardust trail
+Extracted #: ['19', '1', '2']
+Is Indic   : False
+----------------------------------------
+Raw Name   : Delta Tetlecommunication Inc
+Norm Name  : delta tetlecommunication inc
+Raw Addr   : 914 PIERPONT AVE, CLEVELAND, OH
+Norm Addr  : 914 pierpont ave cleveland oh
+Extracted #: ['914']
+Is Indic   : False
+----------------------------------------
+Raw Name   : Lee and Lawson
+Norm Name  : lee and lawson
+Raw Addr   : 1702 Pine Avenue, CITY OF MENOMONIE, WI
+Norm Addr  : 1702 pine avenue city of menomonie wi
+Extracted #: ['1702']
+Is Indic   : False
+----------------------------------------
+Raw Name   : SHIVSHAKTI VIDYALAYA VIDYALAYA OVERSEAS CORPORATION | www.shivshakti.com
+Norm Name  : shivshakti vidyalaya vidyalaya overseas corporation www shivshakti com
+Raw Addr   : H.NO 204 C ROAD HOSHIARPUR, PUNJAB, Punjab
+Norm Addr  : h no 204 c road hoshiarpur punjab punjab
+Extracted #: ['204']
+Is Indic   : False
+----------------------------------------
+Raw Name   : Shree Infracon Private Ltd
+Norm Name  : shree infracon private ltd
+Raw Addr   : 63/2275/7, ALHIND TOWER, FIRST FLOOR, JAFFERKHAN COLONY, KOZHIKODE, Kerala
+Norm Addr  : 63 2275 7 alhind tower first floor jafferkhan colony kozhikode kerala
+Extracted #: ['63', '2275', '7']
+Is Indic   : False
+----------------------------------------
+Raw Name   : Chavira Platinum Chimera LLC
+Norm Name  : chavira platinum chimera llc
+Raw Addr   : 282 SAXONY DRIVE, FTT MITCHELL, KY
+Norm Addr  : 282 saxony drive ftt mitchell ky
+Extracted #: ['282']
+Is Indic   : False
+----------------------------------------
+Raw Name   : FOUNDATION EXCEL AGENCY PRIVATE  LIMITED
+Norm Name  : foundation excel agency private limited
+Raw Addr   : HN 753 E-1, BHARAT NAGAR, 104/1/1 ERANDWANE, Maharashtra
+Norm Addr  : hn 753 e 1 bharat nagar 104 1 1 erandwane maharashtra
+Extracted #: ['753', '1', '104', '1', '1']
+Is Indic   : False
+----------------------------------------
+
+=== MEMORY & PERFORMANCE ===
+Memory Usage for S1 100k processed rows (incl. raw+clean+norm cols): 32.20 MB
+Extrapolated RAM required for full S2 normalization (5M rows): 1609.93 MB
+
+Unit Tests Passed: True

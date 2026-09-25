@@ -1,0 +1,21 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Caches and virtual environments
+.pytest_cache/
+.venv/
+venv/
+env/
+
+# Datasets and Large Output Files
+dataset/
+*.parquet
+*.tsv
+*.pkl
+
+# Temp & Artifact images/logs
+*.log
+*.png
+scratch/tooltip_crop.png

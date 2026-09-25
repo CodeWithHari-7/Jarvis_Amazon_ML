@@ -1,0 +1,21 @@
+data:
+  raw_dir: "dataset/train"
+  processed_dir: "dataset/processed"
+  chunk_size: 100000
+
+normalization:
+  lower_case: true
+  remove_punctuation: true
+  normalize_whitespace: true
+  business_suffixes_to_remove: [] # Retained intentionally, handled via token set ratio
+  address_abbreviations:
+    "street": "st"
+    "road": "rd"
+    "avenue": "ave"
+    "circle": "cir"
+    "drive": "dr"
+
+features:
+  use_rapidfuzz: true
+  use_numeric_overlap: true
+  cross_script_flag: true
