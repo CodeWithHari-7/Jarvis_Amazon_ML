@@ -19,3 +19,7 @@ dataset/
 *.log
 *.png
 scratch/tooltip_crop.png
+
+# Large files (exceed GitHub's 100 MB limit)
+*.zip
+6ab10eb3b23ba_student_resource/

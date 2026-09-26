@@ -208,11 +208,9 @@ def extract_numbers(text: str) -> list:
     Critical for address matching (house numbers, PIN codes, etc.)
     Only returns numbers with >= 2 digits to avoid noise from single-digit tokens.
     """
-    if not text:
+    if not text or not isinstance(text, str):
         return []
     nums = re.findall(r'\d+', text)
-    # Keep numbers with >= 2 digits AND single digits that appear in the address
-    # For addresses, all numbers are meaningful
     return [n for n in nums if len(n) >= 1]
 
 
@@ -221,7 +219,7 @@ def extract_tokens(text: str) -> set:
     Tokenize normalized text into a set of tokens.
     Filters out very short tokens (< 2 chars) to reduce noise.
     """
-    if not text:
+    if not text or not isinstance(text, str):
         return set()
     return {tok for tok in text.split() if len(tok) >= 2}
 
@@ -230,7 +228,7 @@ def is_indic_script(text: str) -> bool:
     """
     Returns True if the text contains Indic script characters.
     """
-    if not text:
+    if not text or not isinstance(text, str):
         return False
     return bool(re.search(r'[\u0900-\u0D7F]', text))
 
@@ -241,9 +239,16 @@ def normalize_record(record: dict) -> dict:
     Expects keys: entity_id, business_name, business_address, country
     Returns enriched dict with *_normalized, *_tokens, etc.
     """
-    name_raw = record.get('business_name', '') or ''
-    addr_raw = record.get('business_address', '') or ''
-    country_raw = record.get('country', '') or ''
+    def _safe_str(val):
+        if val is None or (isinstance(val, float) and str(val) == 'nan'):
+            return ''
+        s = str(val).strip()
+        return '' if s.lower() == 'nan' else s
+
+    name_raw = _safe_str(record.get('business_name'))
+    addr_raw = _safe_str(record.get('business_address'))
+    country_raw = _safe_str(record.get('country'))
+    entity_id = _safe_str(record.get('entity_id'))
     
     name_norm = normalize_business_name(name_raw)
     name_norm_full = normalize_business_name(name_raw, strip_legal=False)  # for features

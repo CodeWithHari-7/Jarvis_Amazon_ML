@@ -10,8 +10,8 @@ Arguments:
                 For quick experiments use: --sample 10000
     --output-model: Path to save the trained model pickle
 """
-import sys, io
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+import sys
+sys.stdout.reconfigure(encoding='utf-8', line_buffering=True)
 
 import os
 import time
@@ -23,8 +23,8 @@ from collections import defaultdict
 
 # ── Parse arguments ───────────────────────────────────────────────────────────
 parser = argparse.ArgumentParser(description='Train JARVIS_CHECKER entity resolution model')
-parser.add_argument('--sample', type=int, default=None,
-                    help='Number of S1 entities to sample for training (default: all)')
+parser.add_argument('--sample', type=int, default=20000,
+                    help='Number of S1 entities to sample for training (default: 20000)')
 parser.add_argument('--output-model', type=str, default='dataset/processed/lgb_model.pkl',
                     help='Path to save trained model')
 parser.add_argument('--train-dir', type=str, default='dataset/train',
@@ -79,55 +79,84 @@ for _, row in gt_df.iterrows():
 print(f"  GT rows: {len(gt_df):,} | Total positive pairs: {len(gt_pos):,}")
 print(f"  S1 entities with at least 1 match: {len(s1_to_matches):,}")
 
-# ── 2. Sample S1 entities ─────────────────────────────────────────────────────
-print("\n[2] Loading and sampling S1 entities...")
+# ── 2. Sample S1 entities & target S2/S3 IDs ──────────────────────────────────
+print("\n[2] Sampling S1 entities from ground truth...")
 t0 = time.time()
-all_s1_records = load_and_clean_tsv(TRAIN_S1)
-all_s1_records = [normalize_record(r) for r in all_s1_records]
-print(f"  Total S1: {len(all_s1_records):,}")
-
 np.random.seed(args.seed)
-if args.sample and args.sample < len(all_s1_records):
-    # Sample S1 entities, prefer those with known matches
-    s1_with_matches = [r for r in all_s1_records if r['entity_id'] in s1_to_matches]
-    s1_without_matches = [r for r in all_s1_records if r['entity_id'] not in s1_to_matches]
-    
-    # Take 70% from those with matches, 30% from those without
-    n_with = min(int(args.sample * 0.7), len(s1_with_matches))
-    n_without = min(args.sample - n_with, len(s1_without_matches))
-    
-    idx_with = np.random.choice(len(s1_with_matches), n_with, replace=False)
-    idx_without = np.random.choice(len(s1_without_matches), n_without, replace=False)
-    
-    sampled_s1 = [s1_with_matches[i] for i in idx_with] + [s1_without_matches[i] for i in idx_without]
-    print(f"  Sampled: {len(sampled_s1):,} S1 entities "
-          f"({n_with} with matches, {n_without} without)")
-else:
-    sampled_s1 = all_s1_records
-    print(f"  Using all {len(sampled_s1):,} S1 entities")
 
+all_gt_s1 = gt_df['source1_entity_id'].tolist()
+matched_s1 = [s1 for s1 in all_gt_s1 if s1 in s1_to_matches]
+singleton_s1 = [s1 for s1 in all_gt_s1 if s1 not in s1_to_matches]
+
+sample_size = args.sample if args.sample is not None and args.sample > 0 else 5000
+n_with = min(int(sample_size * 0.70), len(matched_s1))
+n_without = min(sample_size - n_with, len(singleton_s1))
+
+idx_with = np.random.choice(len(matched_s1), n_with, replace=False)
+idx_without = np.random.choice(len(singleton_s1), n_without, replace=False)
+
+target_s1_ids = set([matched_s1[i] for i in idx_with] + [singleton_s1[i] for i in idx_without])
+target_s23_ids = set()
+for s1 in target_s1_ids:
+    target_s23_ids.update(s1_to_matches.get(s1, set()))
+
+print(f"  Target S1 entities: {len(target_s1_ids):,} ({n_with} with matches, {n_without} singletons)")
+print(f"  Target S2/S3 matches to capture: {len(target_s23_ids):,}")
+
+# Load and normalize only sampled S1
+print("  Streaming and extracting sampled S1 records from train_source1...")
+t_s1 = time.time()
+sampled_s1_raw = []
+for chunk in pd.read_csv(TRAIN_S1, sep='\t', dtype=str, chunksize=200000, keep_default_na=False, on_bad_lines='skip'):
+    sub = chunk[chunk['entity_id'].isin(target_s1_ids)]
+    if len(sub) > 0:
+        sampled_s1_raw.extend(sub.to_dict('records'))
+    if len(sampled_s1_raw) >= len(target_s1_ids):
+        break
+
+sampled_s1 = [normalize_record(r) for r in sampled_s1_raw]
 sampled_s1_ids = {r['entity_id'] for r in sampled_s1}
-del all_s1_records
+print(f"  Loaded & normalized {len(sampled_s1):,} S1 in {time.time()-t_s1:.1f}s")
+del sampled_s1_raw
 
-# ── 3. Load S2/S3 ─────────────────────────────────────────────────────────────
-print("\n[3] Loading S2/S3 training data...")
-t0 = time.time()
-s2_records_raw = load_and_clean_tsv(TRAIN_S2)
-s3_records_raw = load_and_clean_tsv(TRAIN_S3)
-print(f"  Raw: S2={len(s2_records_raw):,} | S3={len(s3_records_raw):,}")
+# ── 3. Load S2/S3 (Target Matches + Hard Negative Distractors) ─────────────────
+print("\n[3] Streaming S2 & S3 (Targets + Distractors)...")
+t_s23 = time.time()
 
-# Normalize
-print("  Normalizing S2/S3...")
-s2_records = [normalize_record(r) for r in s2_records_raw]
-s3_records = [normalize_record(r) for r in s3_records_raw]
-for r in s3_records:
-    r['_source'] = 'S3'
-for r in s2_records:
-    r['_source'] = 'S2'
+def load_source_targets_and_distractors(path: str, target_ids: set, max_distractors: int = 15000, source_tag: str = 'S2'):
+    found_targets = []
+    distractors = []
+    for chunk in pd.read_csv(path, sep='\t', dtype=str, chunksize=200000, keep_default_na=False, on_bad_lines='skip'):
+        # Target matches
+        tgt_rows = chunk[chunk['entity_id'].isin(target_ids)]
+        if len(tgt_rows) > 0:
+            found_targets.extend(tgt_rows.to_dict('records'))
+        # Distractors
+        if len(distractors) < max_distractors:
+            non_tgt = chunk[~chunk['entity_id'].isin(target_ids)]
+            take = min(max_distractors - len(distractors), len(non_tgt), 5000)
+            if take > 0:
+                distractors.extend(non_tgt.sample(take, random_state=42).to_dict('records'))
+    
+    total = found_targets + distractors
+    records = []
+    for r in total:
+        norm_r = normalize_record(r)
+        norm_r['_source'] = source_tag
+        records.append(norm_r)
+    return records
+
+print("  Loading S2...")
+s2_records = load_source_targets_and_distractors(TRAIN_S2, target_s23_ids, max_distractors=100000, source_tag='S2')
+print(f"  S2 loaded: {len(s2_records):,} records")
+
+print("  Loading S3...")
+s3_records = load_source_targets_and_distractors(TRAIN_S3, target_s23_ids, max_distractors=100000, source_tag='S3')
+print(f"  S3 loaded: {len(s3_records):,} records")
+
 s23_records = s2_records + s3_records
 s23_lookup = {r['entity_id']: r for r in s23_records}
-print(f"  Normalized S2/S3: {len(s23_records):,} records in {time.time()-t0:.1f}s")
-del s2_records_raw, s3_records_raw
+print(f"  Total S2/S3 training pool: {len(s23_records):,} records in {time.time()-t_s23:.1f}s")
 
 # ── 4. Build blocking index ────────────────────────────────────────────────────
 print("\n[4] Building blocking inverted indexes...")
@@ -160,11 +189,40 @@ for r in sampled_s1:
 
 total_in_scope = recovered_positives + missed_positives
 blocking_recall = recovered_positives / total_in_scope if total_in_scope > 0 else 0.0
-print(f"  Candidates: {len(candidate_pairs):,}")
+print(f"  Total candidates before cap: {len(candidate_pairs):,}")
 print(f"  Blocking recall: {blocking_recall:.4f} "
-      f"({recovered_positives:,} / {total_in_scope:,} true pairs found)")
-print(f"  Forced into candidates: {missed_positives:,} missed positives")
+      f"({recovered_positives:,}/{total_in_scope:,} true pairs found)")
+print(f"  Missed positives forced in: {missed_positives:,}")
 print(f"  Time: {time.time()-t0:.1f}s")
+
+# ── Cap candidates per S1 to prevent O(N) explosion ──────────────────────────
+# Always keep all positives, sample up to MAX_NEGS_PER_S1 negatives per S1
+MAX_NEGS_PER_S1 = 50
+print(f"  Capping to max {MAX_NEGS_PER_S1} negatives per S1 entity...")
+from collections import defaultdict as _dd
+rng = np.random.default_rng(args.seed)
+
+capped_pairs = []
+per_s1 = _dd(lambda: {'pos': [], 'neg': []})
+for s1_id, cid in candidate_pairs:
+    label = 1 if (s1_id, cid) in gt_pos else 0
+    if label == 1:
+        per_s1[s1_id]['pos'].append(cid)
+    else:
+        per_s1[s1_id]['neg'].append(cid)
+
+for s1_id, buckets in per_s1.items():
+    for cid in buckets['pos']:
+        capped_pairs.append((s1_id, cid))
+    negs = buckets['neg']
+    if len(negs) > MAX_NEGS_PER_S1:
+        chosen = rng.choice(len(negs), MAX_NEGS_PER_S1, replace=False)
+        negs = [negs[i] for i in chosen]
+    for cid in negs:
+        capped_pairs.append((s1_id, cid))
+
+candidate_pairs = capped_pairs
+print(f"  After capping: {len(candidate_pairs):,} pairs (was {len(capped_pairs):,})")
 
 # ── 6. Feature extraction ──────────────────────────────────────────────────────
 print("\n[6] Extracting features...")
@@ -228,18 +286,46 @@ t0 = time.time()
 scale_pos = neg_count / pos_count if pos_count > 0 else 1.0
 print(f"  scale_pos_weight: {scale_pos:.2f}")
 
-lgb_model = lgb.LGBMClassifier(
-    n_estimators=500,
-    max_depth=6,
-    learning_rate=0.05,
-    num_leaves=63,
-    subsample=0.8,
-    colsample_bytree=0.8,
-    min_child_samples=20,
-    random_state=args.seed,
-    n_jobs=-1,
-    verbose=-1,
-)
+# Try GPU first, fall back to CPU if GPU build not available
+try:
+    lgb_model = lgb.LGBMClassifier(
+        n_estimators=2000,
+        max_depth=7,
+        learning_rate=0.02,
+        num_leaves=63,
+        subsample=0.85,
+        subsample_freq=1,
+        colsample_bytree=0.85,
+        min_child_samples=20,
+        reg_alpha=0.1,
+        reg_lambda=0.1,
+        scale_pos_weight=scale_pos,
+        device='gpu',
+        gpu_platform_id=0,
+        gpu_device_id=0,
+        random_state=args.seed,
+        n_jobs=-1,
+        verbose=-1,
+    )
+    print("  Using GPU acceleration (RTX 3050)")
+except Exception as gpu_err:
+    print(f"  GPU init failed ({gpu_err}), falling back to CPU")
+    lgb_model = lgb.LGBMClassifier(
+        n_estimators=2000,
+        max_depth=8,
+        learning_rate=0.02,
+        num_leaves=127,
+        subsample=0.85,
+        subsample_freq=1,
+        colsample_bytree=0.85,
+        min_child_samples=15,
+        reg_alpha=0.1,
+        reg_lambda=0.1,
+        scale_pos_weight=scale_pos,
+        random_state=args.seed,
+        n_jobs=-1,
+        verbose=-1,
+    )
 lgb_model.fit(
     X_train, y_train,
     eval_set=[(X_val, y_val)],
