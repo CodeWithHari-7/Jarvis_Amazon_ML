@@ -142,9 +142,9 @@ def process_partition(
                 if not matcher.check_veto(norm1, rec2):
                     surviving.append((cid, p_val))
 
-            # Sort by confidence descending and cap at max 6 matches
+            # Sort by confidence descending and cap at max 10 matches (covers 99.98% of true clusters)
             surviving.sort(key=lambda x: x[1], reverse=True)
-            top_m = [cid for cid, _ in surviving[:6]]
+            top_m = [cid for cid, _ in surviving[:10]]
 
             final_candidates[s1_id] = batch_cands.get(s1_id, "")
             final_matches[s1_id] = ",".join(top_m)
@@ -202,47 +202,22 @@ del s1_us, s23_us
 gc.collect()
 
 # =====================================================================
-# 3. PROCESS INDIA (809,986 entities in 2 sub-partitions A-M and N-Z)
+# =====================================================================
+# 3. PROCESS INDIA (809,986 entities - UNIFIED CANDIDATE POOL)
 # =====================================================================
 print("\n" + "=" * 80)
-print("STAGE 3: PROCESSING INDIA PARTITION (809,986 ENTITIES)")
+print("STAGE 3: PROCESSING INDIA PARTITION (809,986 ENTITIES - UNIFIED POOL)")
 print("=" * 80)
-p1_chars = list('0123456789abcdefghijklm')
 
 s1_in = pl.read_parquet(os.path.join(cache_dir, "s1_india.parquet"))
-s1_in_p1 = s1_in.filter(pl.col('business_name').str.slice(0, 1).str.to_lowercase().is_in(p1_chars))
-s1_in_p2 = s1_in.filter(~pl.col('business_name').str.slice(0, 1).str.to_lowercase().is_in(p1_chars))
-del s1_in
+s2_in = pl.read_parquet(os.path.join(cache_dir, "s2_india.parquet"))
+s3_in = pl.read_parquet(os.path.join(cache_dir, "s3_india.parquet"))
+s23_in = pl.concat([s2_in, s3_in]).unique(subset=['entity_id'])
+del s2_in, s3_in
 gc.collect()
 
-# India Part 1 (A-M + 0-9)
-s2_in_p1 = pl.read_parquet(os.path.join(cache_dir, "s2_india.parquet")).filter(
-    pl.col('business_name').str.slice(0, 1).str.to_lowercase().is_in(p1_chars)
-)
-s3_in_p1 = pl.read_parquet(os.path.join(cache_dir, "s3_india.parquet")).filter(
-    pl.col('business_name').str.slice(0, 1).str.to_lowercase().is_in(p1_chars)
-)
-s23_in_p1 = pl.concat([s2_in_p1, s3_in_p1]).unique(subset=['entity_id'])
-del s2_in_p1, s3_in_p1
-gc.collect()
-
-process_partition("India Partition 1 (A-M)", s1_in_p1, s23_in_p1, batch_size=15000, max_cands=40)
-del s1_in_p1, s23_in_p1
-gc.collect()
-
-# India Part 2 (N-Z + other)
-s2_in_p2 = pl.read_parquet(os.path.join(cache_dir, "s2_india.parquet")).filter(
-    ~pl.col('business_name').str.slice(0, 1).str.to_lowercase().is_in(p1_chars)
-)
-s3_in_p2 = pl.read_parquet(os.path.join(cache_dir, "s3_india.parquet")).filter(
-    ~pl.col('business_name').str.slice(0, 1).str.to_lowercase().is_in(p1_chars)
-)
-s23_in_p2 = pl.concat([s2_in_p2, s3_in_p2]).unique(subset=['entity_id'])
-del s2_in_p2, s3_in_p2
-gc.collect()
-
-process_partition("India Partition 2 (N-Z)", s1_in_p2, s23_in_p2, batch_size=15000, max_cands=40)
-del s1_in_p2, s23_in_p2
+process_partition("India (Unified)", s1_in, s23_in, batch_size=15000, max_cands=40)
+del s1_in, s23_in
 gc.collect()
 
 # =====================================================================
