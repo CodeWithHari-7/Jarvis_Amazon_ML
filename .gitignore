@@ -3,23 +3,15 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# Caches and virtual environments
-.pytest_cache/
-.venv/
-venv/
-env/
-
-# Datasets and Large Output Files
+# Large Datasets (> 100 MB, cannot be pushed to GitHub)
 dataset/
-*.parquet
-*.tsv
-*.pkl
+pipeline_cache/
+train_cache/
+holdout_cache/
 
-# Temp & Artifact images/logs
-*.log
-*.png
-scratch/tooltip_crop.png
+# Large TSV Outputs (> 50-100 MB)
+output/*.tsv
 
-# Large files (exceed GitHub's 100 MB limit)
-*.zip
-6ab10eb3b23ba_student_resource/
+# OS generated files
+.DS_Store
+Thumbs.db
