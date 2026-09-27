@@ -1,15 +1,6 @@
-# Pinned dependencies for Amazon ML Challenge 2026 - Business Entity Resolution
-polars==1.40.1
-pandas==2.3.3
-numpy==2.2.6
-scipy==1.15.3
-scikit-learn==1.7.2
-lightgbm==4.6.0
-xgboost==3.2.0
-rapidfuzz==3.14.5
-unidecode==1.4.0
-torch==2.5.1+cu121
-transformers==5.13.0
-sentence-transformers==6.1.0
-pyahocorasick==2.3.1
-psutil==7.2.2
+polars==1.44.2
+rapidfuzz==3.14.6
+Unidecode==1.4.0
+lightgbm==4.7.0
+numpy==2.2.1
+scikit-learn==1.6.0

@@ -1,0 +1,30 @@
+[france] already scored -> C:\Users\asus\Downloads\Jarvis_Amazon_ML-main\Jarvis_Amazon_ML-main\pipeline_cache\test_scored_france.parquet
+[india] already scored -> C:\Users\asus\Downloads\Jarvis_Amazon_ML-main\Jarvis_Amazon_ML-main\pipeline_cache\test_scored_india.parquet
+[us] 663,106 S1 vs 3,817,031 S2/S3
+    index 3,817,031 recs / 44,770,710 postings in 56s
+    30,000/663,106 S1 -> 2,491,638 pairs (133s)
+    60,000/663,106 S1 -> 2,495,394 pairs (1068s)
+    90,000/663,106 S1 -> 2,490,687 pairs (1145s)
+    120,000/663,106 S1 -> 2,487,914 pairs (1221s)
+    150,000/663,106 S1 -> 2,487,306 pairs (1378s)
+    180,000/663,106 S1 -> 2,487,811 pairs (1443s)
+    210,000/663,106 S1 -> 2,498,871 pairs (1502s)
+    240,000/663,106 S1 -> 2,497,330 pairs (1564s)
+    270,000/663,106 S1 -> 2,487,362 pairs (1628s)
+    300,000/663,106 S1 -> 2,493,945 pairs (1690s)
+    330,000/663,106 S1 -> 2,492,594 pairs (1746s)
+    360,000/663,106 S1 -> 2,487,197 pairs (1803s)
+    390,000/663,106 S1 -> 2,493,407 pairs (1858s)
+    420,000/663,106 S1 -> 2,487,049 pairs (1912s)
+    450,000/663,106 S1 -> 2,496,738 pairs (1967s)
+    480,000/663,106 S1 -> 2,497,559 pairs (2023s)
+    510,000/663,106 S1 -> 2,495,213 pairs (2078s)
+    540,000/663,106 S1 -> 2,494,389 pairs (2132s)
+    570,000/663,106 S1 -> 2,488,676 pairs (2185s)
+    600,000/663,106 S1 -> 2,493,035 pairs (2239s)
+    630,000/663,106 S1 -> 2,496,374 pairs (2296s)
+    660,000/663,106 S1 -> 2,497,062 pairs (2354s)
+    663,106/663,106 S1 -> 256,740 pairs (2361s)
+wrote candidate_pairs.tsv: 1,732,544 rows, 1,732,078 non-empty
+wrote matching_results.tsv: 1,732,544 rows, 1,620,141 non-empty
+done in 2440s
